@@ -9,14 +9,23 @@
 class Camera
 {
 private:
-	glm::vec3 cameraPos, cameraFront, cameraUp;
-	glm::mat4 view;
+	// camera properties
+	glm::vec3 m_position, m_direction, m_up;
+	
+	// euler angles
+	float m_yaw, m_pitch;
+
+	// camera options
+	float m_movementSpeed, m_mouseSensitivity, m_zoom;
+
 
 public:
-	Camera(glm::vec3 camPos, glm::vec3 camUp);
+	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = 0.0f, float pitch = 0.0f);
 
 	glm::mat4 getView();
 	void movement(GLFWwindow* window, const double deltaTime);
-
+	void mouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
+	void zoom(float yoffset);
+	float getZoom();
 };
 

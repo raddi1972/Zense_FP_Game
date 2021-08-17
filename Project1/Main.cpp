@@ -17,10 +17,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+// some global variables
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+float lastX = 400, lastY = 300;
+glm::vec3 cameraFront(0.0f, 1.0f, 0.0f);
+bool firstMouse = false;
+float fov = 45.0f;
+
 // resize callback function
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
+	std::cout << width << " " << height << std::endl;
 }
 
 // processing the inputs
@@ -30,7 +38,26 @@ void processInput(GLFWwindow* window)
 		glfwSetWindowShouldClose(window, true);
 }
 
-// get shaders
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (firstMouse) {
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = lastX - xpos;
+	float yoffset = ypos - lastY;
+	lastX = xpos;
+	lastY = ypos;
+
+	camera.mouseMovement(xoffset, yoffset, true);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	camera.zoom(yoffset);
+}	
 
 int main()
 {
@@ -65,6 +92,11 @@ int main()
 
 	// enabling the z-buffer
 	glEnable(GL_DEPTH_TEST);
+
+	// setting other glfw functions
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 
 	// setting a callback function to change glViewport on resize
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -196,7 +228,6 @@ int main()
 			glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
-	Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	double previousTime = glfwGetTime(), deltaTime = 0.0;
 	//int frameCount = 0;
@@ -233,6 +264,18 @@ int main()
 
 		shader.use();
 		object.bind();
+
+		glm::mat4 view = camera.getView();
+		int viewLoc = glGetUniformLocation(shader.getShaderID(), "view");
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+		// creating the projection matrix
+		glm::mat4 projection = glm::mat4(1.0f);
+		projection = glm::perspective(glm::radians(camera.getZoom()), 800.0f / 600.0f, 0.1f, 100.0f);
+
+		int projectionLoc = glGetUniformLocation(shader.getShaderID(), "projection");
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
 		for (int i = 0; i < 10; i++)
 		{
 			glm::mat4 model = glm::mat4(1.0f);
@@ -240,26 +283,8 @@ int main()
 			float angle = (float)glfwGetTime() * (i + 1);
 			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 
-			glm::mat4 view = glm::mat4(1.0f);
-			// moving the camera
-			const float radius = 10.0f;
-			float camX = sin(glfwGetTime()) * radius;
-			float camZ = cos(glfwGetTime()) * radius;
-			view = camera.getView();
-
-			// creating the projection matrix
-			glm::mat4 projection = glm::mat4(1.0f);
-			projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
-
 			int modelLoc = glGetUniformLocation(shader.getShaderID(), "model");
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-			int viewLoc = glGetUniformLocation(shader.getShaderID(), "view");
-			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-			int projectionLoc = glGetUniformLocation(shader.getShaderID(), "projection");
-			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
 
 			// The draw call
 			glActiveTexture(GL_TEXTURE0);
