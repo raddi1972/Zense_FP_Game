@@ -1,2 +1,9 @@
-﻿  Camera.cpp
+﻿  VertexObject.cpp
+D:\cpp_projects\Project1\Project1\src\VertexObject.cpp(25,20): warning C4018: '<': signed/unsigned mismatch
+D:\cpp_projects\Project1\Project1\src\VertexObject.cpp(35,20): warning C4018: '<': signed/unsigned mismatch
+D:\cpp_projects\Project1\Project1\src\VertexObject.cpp(106,20): warning C4018: '<': signed/unsigned mismatch
+D:\cpp_projects\Project1\Project1\src\VertexObject.cpp(123,20): warning C4018: '<': signed/unsigned mismatch
+D:\cpp_projects\Project1\Project1\src\VertexObject.cpp(128,20): warning C4018: '<': signed/unsigned mismatch
+D:\cpp_projects\Project1\Project1\src\VertexObject.cpp(153,24): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\cpp_projects\Project1\Project1\src\VertexObject.cpp(188,94): warning C4312: 'type cast': conversion from 'unsigned int' to 'void *' of greater size
   Project1.vcxproj -> D:\cpp_projects\Project1\x64\Debug\Project1.exe
