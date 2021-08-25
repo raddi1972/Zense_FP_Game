@@ -27,7 +27,7 @@
 //#include "Model.h"
 
 // some global variables
-Camera *camera;
+std::shared_ptr<Camera> camera;
 int w_width = 1280, w_height = 720;
 bool cameraControls = false, isLoaded = false;
 bool firstMouse = false;
@@ -107,21 +107,22 @@ int main()
 	//Shader shader("scenes/scene1/shaders/vertexshader.shader", "scenes/scene1/shaders/fragmentshader.shader");
 	//Shader lightShader("scenes/scene1/shaders/vertexshader.shader", "scenes/scene1/shaders/lighting_fs2.shader");
 	
-	Scene scene;
-	unsigned int objectShader = scene.addObjectShader("scenes/scene1/shaders/vertexshader.shader", "scenes/scene1/shaders/fragmentshader.shader");
-	unsigned int lightingShader = scene.addLightShader("scenes/scene1/shaders/vertexshader.shader", "scenes/scene1/shaders/lighting_fs2.shader");
-	scene.addObject("scenes/scene1/VertexData/cube_normals.txt");
-	scene.addLight("scenes/scene1/VertexData/cube.txt", 0, glm::vec3(3.0f, 2.0f, 4.0));
-	scene.addLight("scenes/scene1/VertexData/cube.txt", 0, glm::vec3(-3.0f, 2.0f, -4.0));
+	Scene scene("scenes/scene1");
+	unsigned int objectShader = scene.addObjectShader("vertexshader.shader", "fragmentshader.shader");
+	unsigned int lightingShader = scene.addLightShader("vertexshader.shader", "lighting_fs2.shader");
+	scene.addObject("cube_normals.txt");
+	scene.addObject("ground.txt");
+	scene.addLight("cube.txt", 0, glm::vec3(3.0f, 2.0f, 4.0));
+	scene.addLight("cube.txt", 0, glm::vec3(-3.0f, 2.0f, -4.0));
 	scene.setObjectModel(0, 0);
 	scene.setObjectModel(0, 0);
-	scene.updateObjectModel(0, 1, glm::vec3(0.0f, 5.0f, 0.0f));
-	scene.updateObjectModel(0, 1, 0.2f);
-	scene.addTexture(0, "scenes/scene1/textures/diffuse.png", "scenes/scene1/textures/specular.png");
-	//VertexObject object("scenes/scene1/VertexData/cube_normals.txt");
-	//object.unbind();
-	//VertexObject light();
-	//light.unbind();
+	scene.setObjectModel(0, 0);
+	scene.setObjectModel(1, 0);
+	scene.updateObjectModel(0, 0, glm::vec3(0.0f, 0.5001f, 0.0f));
+	scene.updateObjectModel(0, 1, glm::vec3(0.0f, 1.50011f, 0.0f));
+	scene.updateObjectModel(0, 2, glm::vec3(1.0f, 0.5001f, 0.0f));
+	scene.addTexture(0, "diffuse.png", "specular.png");
+	scene.addTexture(1, "concrete.jpg", "concrete.jpg");
 
 	//Texture diffuse("scenes/scene1/textures/diffuse.png", true);
 	//Texture specular("scenes/scene1/textures/specular.png", true);
@@ -135,11 +136,7 @@ int main()
 	
 	// similar to VAO, VBO, EBO and shaders, the textures also work as objects and require
 	// a ID to reference the object
-
-
-
-	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
-
+	// 
 	//shader.use();
 	//// material
 	//shader.setInt("material.diffuse", 0);

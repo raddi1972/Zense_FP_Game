@@ -11,16 +11,18 @@
 class Scene
 {
 private:
+	std::string directory;
 	std::vector<VertexObject> objects;
 	std::vector<Light> lights;
 	std::vector<Shader> objectShaders;
 	std::vector<Shader> lightShaders;
-	Camera *camera;
+	std::shared_ptr<Camera> camera;
 	float p_np, p_fp;
 
 public:
 	// constructors
-	Scene(float np = 0.1f, float fp = 100.0f);
+	Scene(std::string path, float np = 0.1f, float fp = 100.0f);
+	~Scene();
 
 	void addObject(const std::string& path);
 	void addLight(const std::string& path, unsigned int type, glm::vec3 lightPos);
@@ -40,6 +42,6 @@ public:
 	void updateObjectModel(unsigned int objectIndex, unsigned int modelNo, float scale);
 	void updateObjectModel(unsigned int objectIndex, unsigned int modelNo, float scalex, float scaley, float scalez);
 
-	Camera* draw(GLFWwindow* window, float width, float height);
+	std::shared_ptr<Camera> draw(GLFWwindow* window, float width, float height);
 };
 

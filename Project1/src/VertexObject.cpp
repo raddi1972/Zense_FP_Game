@@ -1,7 +1,7 @@
 #include "VertexObject.h"
 #include "Debug.h"
 
-VertexObject::VertexObject(const std::string& path)
+VertexObject::VertexObject(const std::string& path) : modelCount(0), VAO(0), VBO(0)
 {
 	// this constructor reads the vertex data from a file
 	std::ifstream objectData(path);
@@ -66,7 +66,6 @@ void VertexObject::init(float data[], int size)
 	// giving the data to VBO
 	GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
 	bufferSize = size;
-
 	modelCount = 0;
 }
 

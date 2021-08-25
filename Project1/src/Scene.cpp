@@ -2,7 +2,7 @@
 //#include "Debug.h"
 
 // constructors implementation
-Scene::Scene(float np, float fp)
+Scene::Scene(std::string path, float np, float fp) : directory(path)
 {
 	// p_np -> perspective near plane
 	// p_fp -> perspective far plane
@@ -10,26 +10,35 @@ Scene::Scene(float np, float fp)
 
 	// setting up the camera for view matrix
 	// only 1 camera per scene
-	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	camera = std::make_shared<Camera>(glm::vec3(0.0f, 1.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
+Scene::~Scene()
+{
+	std::cout << "Object Deleted" << std::endl;
 }
 
 void Scene::addObject(const std::string& path)
 {
-	objects.push_back(VertexObject(path));
+	std::string newPath = directory + "/VertexData/" + path;
+	objects.push_back(VertexObject(newPath));
 }
 
 void Scene::addLight(const std::string& path, unsigned int type, glm::vec3 lightPos)
 {
-	lights.push_back(Light(path, type, lightPos));
+	std::string newPath = directory + "/VertexData/" + path;
+	lights.push_back(Light(newPath, type, lightPos));
 }
 
 unsigned int Scene::addObjectShader(const std::string& vs_path, const std::string& fs_path)
 {
-	objectShaders.push_back(Shader(vs_path.c_str(), fs_path.c_str()));
+	std::string vs_newPath = directory + "/shaders/" + vs_path;
+	std::string fs_newPath = directory + "/shaders/" + fs_path;
+	objectShaders.push_back(Shader(vs_newPath.c_str(), fs_newPath.c_str()));
 	return (objectShaders.size() - 1);
 }
 
-Camera* Scene::draw(GLFWwindow* window, float width, float height)
+std::shared_ptr<Camera> Scene::draw(GLFWwindow* window, float width, float height)
 {
 	glm::mat4 view = camera->getView();
 	glm::mat4 projection = glm::perspective(glm::radians(camera->getZoom()), width / height, p_np, p_fp);
@@ -52,12 +61,16 @@ Camera* Scene::draw(GLFWwindow* window, float width, float height)
 
 void Scene::addTexture(unsigned int objectIndex, const std::string& diffPath, const std::string& specularPath)
 {
-	objects[objectIndex].addMaps(diffPath, specularPath);
+	std::string diff_newPath = directory + "/textures/" + diffPath;
+	std::string spec_newPath = directory + "/textures/" + specularPath;
+	objects[objectIndex].addMaps(diff_newPath, spec_newPath);
 }
 
 unsigned int Scene::addLightShader(const std::string& vs_path, const std::string& fs_path)
 {
-	lightShaders.push_back(Shader(vs_path.c_str(), fs_path.c_str()));
+	std::string vs_newPath = directory + "/shaders/" + vs_path;
+	std::string fs_newPath = directory + "/shaders/" + fs_path;
+	lightShaders.push_back(Shader(vs_newPath.c_str(), fs_newPath.c_str()));
 	return (lightShaders.size() - 1);
 }
 
