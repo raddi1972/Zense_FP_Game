@@ -192,6 +192,7 @@
     <ClInclude Include="..\external\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\external\imgui\imstb_textedit.h" />
     <ClInclude Include="..\external\imgui\imstb_truetype.h" />
+    <ClInclude Include="src\Debug.h" />
     <ClInclude Include="src\Light.h" />
     <ClInclude Include="src\Scene.h" />
     <ClInclude Include="src\Model.h" />

@@ -1,4 +1,5 @@
 #include "VertexObject.h"
+#include "Debug.h"
 
 VertexObject::VertexObject(const std::string& path)
 {
@@ -55,15 +56,15 @@ unsigned int VertexObject::getId()
 void VertexObject::init(float data[], int size)
 {
 	// generating the vertex array object and vertex buffer object
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
+	GLCall(glGenVertexArrays(1, &VAO));
+	GLCall(glGenBuffers(1, &VBO));
 
 	// binding the vertex array and vertex buffers
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	GLCall(glBindVertexArray(VAO));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, VBO));
 
 	// giving the data to VBO
-	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+	GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
 	bufferSize = size;
 
 	modelCount = 0;
@@ -72,17 +73,17 @@ void VertexObject::init(float data[], int size)
 void VertexObject::addIndices(unsigned int data[], unsigned int size)
 {
 	// we bind the VAO again for security reason
-	glBindVertexArray(VAO);
+	GLCall(glBindVertexArray(VAO));
 
 	// we set the flag of index array to be true
 	indexVertices = true;
 
 	// create and bind the index buffer object
-	glGenBuffers(1, &EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	GLCall(glGenBuffers(1, &EBO));
+	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO));
 	
 	// now we send the data
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
 }
 
 bool VertexObject::genIndices(float data[], int size)
@@ -142,9 +143,9 @@ bool VertexObject::genIndices(float data[], int size)
 	}
 	addIndices(vertexData, noOfVertices * sizeof(unsigned int));
 	// updating vbo
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, indices.size() * skipSize * sizeof(float), indexedData, GL_STATIC_DRAW);
+	GLCall(glBindVertexArray(VAO));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, VBO));
+	GLCall(glBufferData(GL_ARRAY_BUFFER, indices.size() * skipSize * sizeof(float), indexedData, GL_STATIC_DRAW));
 	return true;
 }
 
@@ -177,7 +178,7 @@ unsigned int VertexObject::addAttributes(unsigned int size, unsigned int type, b
 
 void VertexObject::enableAttribs()
 {
-	glBindVertexArray(VAO);
+	GLCall(glBindVertexArray(VAO));
 	unsigned int stride = 0;
 	for (int i = 0; i < attribs.size(); i++)
 		stride += attribs[i].bytes;
@@ -185,42 +186,67 @@ void VertexObject::enableAttribs()
 	unsigned int offset = 0;
 	for (int i = 0; i < attribs.size(); i++) {
 		if (attribs[i].toEnable) {
-			glVertexAttribPointer(i, attribs[i].size, attribs[i].type, GL_FALSE, stride, (void*)offset);
-			glEnableVertexAttribArray(i);
+			GLCall(glVertexAttribPointer(i, attribs[i].size, attribs[i].type, GL_FALSE, stride, (void*)offset));
+			GLCall(glEnableVertexAttribArray(i));
 		}
 		offset += attribs[i].bytes;
 	}
 }
 
-void VertexObject::drawCall()
+void VertexObject::drawCall(std::vector<Shader>& shaders, glm::mat4& view, glm::mat4& projection, glm::vec3 viewPos)
 {
 	int vertexSize = 0;
 	for (auto it = attribs.begin(); it != attribs.end(); it++)
 		vertexSize += (*it).bytes;
 	int vertices = bufferSize / vertexSize;
 	bind();
-	if (!indexVertices)
+	for (int i = 0; i < models.size(); i++)
 	{
-		glDrawArrays(GL_TRIANGLES, 0, vertices);
-	}
-	else {
-		glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_INT, 0);
+		Shader current = shaders[modelShader[i]];
+		current.use();
+		current.setMat4("model", models[i]);
+		current.setMat4("view", view);
+		current.setMat4("projection", projection);
+		current.setVec3("viewPos", viewPos);
+
+		for (int j = 0; j < diffMaps.size(); j++)
+		{
+			std::string name = "material.";
+			std::string diffName = name + "diffuse";
+			std::string specularName = name + "specular";
+			std::string shininess = name + "shininess";
+			current.setInt(diffName, 0);
+			current.setInt(specularName, 1);
+			current.setFloat(shininess, 64.0);
+			diffMaps[j].activeTexture(0);
+			specularMaps[j].activeTexture(1);
+		}
+		
+		if (!indexVertices)
+		{
+			GLCall(glDrawArrays(GL_TRIANGLES, 0, vertices));
+		}
+		else
+		{
+			GLCall(glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_INT, 0));
+		}
 	}
 }
 
 void VertexObject::bind()
 {
-	glBindVertexArray(VAO);
+	GLCall(glBindVertexArray(VAO));
 }
 
 void VertexObject::unbind()
 {
-	glBindVertexArray(0);
+	GLCall(glBindVertexArray(0));
 }
 
-void VertexObject::addShader(unsigned int shaderID)
+void VertexObject::addMaps(const std::string& diffPath, const std::string& specularPath)
 {
-	shaderRefs.push_back(shaderID);
+	diffMaps.push_back(Texture(diffPath));
+	specularMaps.push_back(Texture(specularPath));
 }
 
 void VertexObject::updateModel(unsigned int index, float angle, glm::vec3 direction)

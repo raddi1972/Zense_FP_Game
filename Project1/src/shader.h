@@ -20,7 +20,7 @@ public:
 	Shader(const char* vertexPath, const char* fragmentPath);
 	
 	// if we wish to activate this shader
-	bool use();
+	bool use() const;
 	unsigned int getShaderID();
 	void setBool(const std::string& name, bool value) const;
 	void setInt(const std::string& name, int value) const;

@@ -14,6 +14,7 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include "Scene.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -26,12 +27,12 @@
 //#include "Model.h"
 
 // some global variables
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-float lastX = 400, lastY = 300;
-bool firstMouse = false;
-bool cameraControls = false, isLoaded = false;
-
+Camera *camera;
 int w_width = 1280, w_height = 720;
+bool cameraControls = false, isLoaded = false;
+bool firstMouse = false;
+float lastX = 400, lastY = 300;
+
 
 // resize callback function
 void framebuffer_size_callback(GLFWwindow* window, int w, int h)
@@ -42,18 +43,17 @@ void framebuffer_size_callback(GLFWwindow* window, int w, int h)
 	}
 	glViewport(0, 0, w_width, w_height);
 	std::cout << w_width << " " << w_height << std::endl;
-}
+}	
 
-// processing the inputs
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			glfwSetCursorPosCallback(window, nullptr);
-			glfwSetScrollCallback(window, nullptr);
-			isLoaded = false;
-			cameraControls = false;
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		glfwSetCursorPosCallback(window, nullptr);
+		glfwSetScrollCallback(window, nullptr);
+		isLoaded = false;
+		cameraControls = false;
 	}
 }
 
@@ -70,13 +70,15 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	lastX = xpos;
 	lastY = ypos;
 
-	camera.mouseMovement(xoffset, yoffset, true);
+	if(camera)
+		camera->mouseMovement(xoffset, yoffset, true);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.zoom(yoffset);
-}	
+	if(camera)
+		camera->zoom(yoffset);
+}
 
 GLFWwindow* initOpengl();
 
@@ -102,18 +104,30 @@ int main()
 	// =====================================end of setting up imgui=======================
 
 	//Shader shader("shaders/VertexShader.shader", "shaders/FragmentShader.shader");
-	Shader shader("scenes/scene1/shaders/vertexshader.shader", "scenes/scene1/shaders/fragmentshader.shader");
-	Shader lightShader("scenes/scene1/shaders/vertexshader.shader", "scenes/scene1/shaders/lighting_fs2.shader");
+	//Shader shader("scenes/scene1/shaders/vertexshader.shader", "scenes/scene1/shaders/fragmentshader.shader");
+	//Shader lightShader("scenes/scene1/shaders/vertexshader.shader", "scenes/scene1/shaders/lighting_fs2.shader");
 	
-	VertexObject object("scenes/scene1/VertexData/cube_normals.txt");
-	object.unbind();
-	VertexObject light("scenes/scene1/VertexData/cube.txt");
-	light.unbind();
+	Scene scene;
+	unsigned int objectShader = scene.addObjectShader("scenes/scene1/shaders/vertexshader.shader", "scenes/scene1/shaders/fragmentshader.shader");
+	unsigned int lightingShader = scene.addLightShader("scenes/scene1/shaders/vertexshader.shader", "scenes/scene1/shaders/lighting_fs2.shader");
+	scene.addObject("scenes/scene1/VertexData/cube_normals.txt");
+	scene.addLight("scenes/scene1/VertexData/cube.txt", 0, glm::vec3(3.0f, 2.0f, 4.0));
+	scene.addLight("scenes/scene1/VertexData/cube.txt", 0, glm::vec3(-3.0f, 2.0f, -4.0));
+	scene.setObjectModel(0, 0);
+	scene.setObjectModel(0, 0);
+	scene.updateObjectModel(0, 1, glm::vec3(0.0f, 5.0f, 0.0f));
+	scene.updateObjectModel(0, 1, 0.2f);
+	scene.addTexture(0, "scenes/scene1/textures/diffuse.png", "scenes/scene1/textures/specular.png");
+	//VertexObject object("scenes/scene1/VertexData/cube_normals.txt");
+	//object.unbind();
+	//VertexObject light();
+	//light.unbind();
 
-	Texture diffuse("scenes/scene1/textures/diffuse.png", true);
-	Texture specular("scenes/scene1/textures/specular.png", true);
-	diffuse.activeTexture(0);
-	specular.activeTexture(1);
+	//Texture diffuse("scenes/scene1/textures/diffuse.png", true);
+	//Texture specular("scenes/scene1/textures/specular.png", true);
+	//diffuse.activeTexture(0);
+	//specular.activeTexture(1);
+
 	//Shader shader2("shaders/lighting_vs.shader", "shaders/lighting_fs2.shader");
 
 	// getting the texture image from the file system
@@ -126,24 +140,24 @@ int main()
 
 	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 
-	shader.use();
-	// material
-	shader.setInt("material.diffuse", 0);
-	shader.setInt("material.specular", 1);
-	shader.setFloat("material.shininess", 64.0f);
+	//shader.use();
+	//// material
+	//shader.setInt("material.diffuse", 0);
+	//shader.setInt("material.specular", 1);
+	//shader.setFloat("material.shininess", 64.0f);
 
-	// light distance components
-	shader.setFloat("light.constant", 1.0f);
-	shader.setFloat("light.linear", 0.09f);
-	shader.setFloat("light.quadratic", 0.032f);
+	//// light distance components
+	//shader.setFloat("light.constant", 1.0f);
+	//shader.setFloat("light.linear", 0.09f);
+	//shader.setFloat("light.quadratic", 0.032f);
 
-	// light properties
-	shader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
-	shader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f); // darken diffuse light a bit
-	shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+	//// light properties
+	//shader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
+	//shader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f); // darken diffuse light a bit
+	//shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
-	lightShader.use();
-	lightShader.setVec3("lightColor", lightColor);
+	//lightShader.use();
+	//lightShader.setVec3("lightColor", lightColor);
 
 	double previousTime = glfwGetTime(), deltaTime = 0.0;
 	bool windowActive = true;
@@ -155,8 +169,8 @@ int main()
 		// functions (like any callback functions)
 		glfwPollEvents();
 
-		// Start the Dear ImGui frame
 
+		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -181,6 +195,7 @@ int main()
 		}
 		ImGui::Render();
 
+		// camera stuff
 		if (cameraControls && !isLoaded) {
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			glfwSetCursorPosCallback(window, mouse_callback);
@@ -201,7 +216,8 @@ int main()
 		}*/
 
 		// input commands
-		camera.movement(window, deltaTime);
+		if(camera)
+			camera->movement(window, deltaTime);
 		processInput(window);
 
 		// rendering commands
@@ -219,50 +235,52 @@ int main()
 
 		glm::vec3 lightPos(3.0f, 2.0f, 4.0f);
 
-		shader.use();
-		shader.setVec3("viewPos", camera.getPosition());
-		shader.setVec3("lightPos", lightPos);
+		camera = scene.draw(window, w_width, w_height);
+
+		//shader.use();
+		//shader.setVec3("viewPos", camera->getPosition());
+		//shader.setVec3("lightPos", lightPos);
 
 
 
-		glm::mat4 view = camera.getView();
-		int viewLoc = glGetUniformLocation(shader.getShaderID(), "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		//glm::mat4 view = camera->getView();
+		//int viewLoc = glGetUniformLocation(shader.getShaderID(), "view");
+		//glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
 		// creating the projection matrix
-		glm::mat4 projection = glm::mat4(1.0f);
-		projection = glm::perspective(glm::radians(camera.getZoom()), (float)w_width / (float)w_height, 0.1f, 100.0f);
+		//glm::mat4 projection = glm::mat4(1.0f);
+		//projection = glm::perspective(glm::radians(camera->getZoom()), (float)w_width / (float)w_height, 0.1f, 100.0f);
 
-		int projectionLoc = glGetUniformLocation(shader.getShaderID(), "projection");
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		//int projectionLoc = glGetUniformLocation(shader.getShaderID(), "projection");
+		//glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-		glm::mat4 model = glm::mat4(1.0f);
+		//glm::mat4 model = glm::mat4(1.0f);
 		//model = glm::rotate(model, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 		//model = glm::rotate(model, 180.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 		//model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f));
 		//model = glm::scale(model, glm::vec3(0.01f));
 
-		int modelLoc = glGetUniformLocation(shader.getShaderID(), "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		object.drawCall();
+		//int modelLoc = glGetUniformLocation(shader.getShaderID(), "model");
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//object.drawCall();
 
 
 		// The draw call
-		lightShader.use();
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f));
+		//lightShader.use();
+		//model = glm::mat4(1.0f);
+		//model = glm::translate(model, lightPos);
+		//model = glm::scale(model, glm::vec3(0.2f));
 
-		modelLoc = glGetUniformLocation(lightShader.getShaderID(), "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//modelLoc = glGetUniformLocation(lightShader.getShaderID(), "model");
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-		viewLoc = glGetUniformLocation(lightShader.getShaderID(), "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		//viewLoc = glGetUniformLocation(lightShader.getShaderID(), "view");
+		//glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
-		projectionLoc = glGetUniformLocation(lightShader.getShaderID(), "projection");
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-		light.bind();
-		light.drawCall();
+		//projectionLoc = glGetUniformLocation(lightShader.getShaderID(), "projection");
+		//glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		//light.bind();
+		//light.drawCall();
 
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
