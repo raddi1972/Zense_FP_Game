@@ -1,7 +1,7 @@
 #include "VertexObject.h"
 #include "Debug.h"
 
-VertexObject::VertexObject(const std::string& path) : modelCount(0), VAO(0), VBO(0)
+VertexObject::VertexObject(const std::string& path) : modelCount(0), VAO(0), VBO(0), shaderIndex(0)
 {
 	// this constructor reads the vertex data from a file
 	std::ifstream objectData(path);
@@ -83,6 +83,36 @@ void VertexObject::addIndices(unsigned int data[], unsigned int size)
 	
 	// now we send the data
 	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+}
+
+void VertexObject::addIndices(const std::string path)
+{
+	std::ifstream objectData(path);
+	if (objectData.fail())
+	{
+		std::cout << path << " Index data not found" << std::endl;
+		return;
+	}
+	std::stringstream ss;
+	std::string s;
+
+	while (std::getline(objectData, s))
+	{
+		ss << s << std::endl;
+	}
+	objectData.close();
+	unsigned int size;
+	ss >> size;
+
+	std::unique_ptr<unsigned int[]> data = std::make_unique<unsigned int[]>(size);
+	for (int i = 0; i < size; i++)
+	{
+		unsigned int index;
+		ss >> index;
+		data[i] = index;
+	}
+	indices = size;
+	addIndices(data.get(), size * sizeof(unsigned int));
 }
 
 bool VertexObject::genIndices(float data[], int size)
@@ -199,34 +229,34 @@ void VertexObject::drawCall(std::vector<Shader>& shaders, glm::mat4& view, glm::
 		vertexSize += (*it).bytes;
 	int vertices = bufferSize / vertexSize;
 	bind();
+	Shader current = shaders[shaderIndex];
+	current.use();
+	current.setMat4("view", view);
+	current.setMat4("projection", projection);
+	current.setVec3("viewPos", viewPos);
+	for (int j = 0; j < diffMaps.size(); j++)
+	{
+		std::string name = "material.";
+		std::string diffName = name + "diffuse";
+		std::string specularName = name + "specular";
+		std::string shininess = name + "shininess";
+		current.setInt(diffName, 2 * j);
+		current.setInt(specularName, 2 * j + 1);
+		current.setFloat(shininess, 128.0);
+		diffMaps[j].activeTexture(2 * j);
+		specularMaps[j].activeTexture(2 * j + 1);
+	}
 	for (int i = 0; i < models.size(); i++)
 	{
-		Shader current = shaders[modelShader[i]];
-		current.use();
-		current.setMat4("model", models[i]);
-		current.setMat4("view", view);
-		current.setMat4("projection", projection);
-		current.setVec3("viewPos", viewPos);
 
-		for (int j = 0; j < diffMaps.size(); j++)
-		{
-			std::string name = "material.";
-			std::string diffName = name + "diffuse";
-			std::string specularName = name + "specular";
-			std::string shininess = name + "shininess";
-			current.setInt(diffName, 0);
-			current.setInt(specularName, 1);
-			current.setFloat(shininess, 64.0);
-			diffMaps[j].activeTexture(0);
-			specularMaps[j].activeTexture(1);
-		}
-		
+		current.setMat4("model", models[i]);
 		if (!indexVertices)
 		{
 			GLCall(glDrawArrays(GL_TRIANGLES, 0, vertices));
 		}
 		else
 		{
+			vertices = indices;
 			GLCall(glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_INT, 0));
 		}
 	}

@@ -2,13 +2,14 @@
 
 Light::Light(const std::string& path, unsigned int type, glm::vec3 lightPos, float constant, float linear, float quadratic, glm::vec3 lightColor) : VertexObject::VertexObject(path)
 {
+	shaderIndex = 1;
 	this->type = type;
 	this->constant = constant;
 	this->linear = linear;
 	this->quadratic = quadratic;
 	this->lightColor = lightColor;
 	this->lightPos = lightPos;
-	this->addModel(0);
+	this->addModel();
 	this->updateModel(0, lightPos);
 	setLightProperties();
 }

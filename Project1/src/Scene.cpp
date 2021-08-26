@@ -22,20 +22,28 @@ void Scene::addObject(const std::string& path)
 {
 	std::string newPath = directory + "/VertexData/" + path;
 	objects.push_back(VertexObject(newPath));
+	int pos = newPath.find('.');
+	std::string indexPath = newPath.substr(0, pos) + "_indices.txt";
+	std::cout << indexPath << std::endl;
+	objects[objects.size() - 1].addIndices(indexPath);
 }
 
 void Scene::addLight(const std::string& path, unsigned int type, glm::vec3 lightPos)
 {
 	std::string newPath = directory + "/VertexData/" + path;
 	lights.push_back(Light(newPath, type, lightPos));
+	int pos = newPath.find('.');
+	std::string indexPath = newPath.substr(0, pos) + "_indices.txt";
+	std::cout << indexPath << std::endl;
+	lights[lights.size() - 1].addIndices(indexPath);
 }
 
-unsigned int Scene::addObjectShader(const std::string& vs_path, const std::string& fs_path)
+unsigned int Scene::addShader(const std::string& vs_path, const std::string& fs_path)
 {
 	std::string vs_newPath = directory + "/shaders/" + vs_path;
 	std::string fs_newPath = directory + "/shaders/" + fs_path;
-	objectShaders.push_back(Shader(vs_newPath.c_str(), fs_newPath.c_str()));
-	return (objectShaders.size() - 1);
+	shaders.push_back(Shader(vs_newPath.c_str(), fs_newPath.c_str()));
+	return (shaders.size() - 1);
 }
 
 std::shared_ptr<Camera> Scene::draw(GLFWwindow* window, float width, float height)
@@ -43,20 +51,56 @@ std::shared_ptr<Camera> Scene::draw(GLFWwindow* window, float width, float heigh
 	glm::mat4 view = camera->getView();
 	glm::mat4 projection = glm::perspective(glm::radians(camera->getZoom()), width / height, p_np, p_fp);
 
-	for (int i = 0; i < objectShaders.size(); i++)
+	for (int i = 0; i < shaders.size(); i++)
+	{
+		shaders[i].use();
+		shaders[i].setInt("lightNo", lights.size());
+	}
+
+	for (int i = 0; i < shaders.size(); i++)
 	{
 		for (int j = 0; j < lights.size(); j++)
-			lights[j].setUniforms(objectShaders[i], j);
+			lights[j].setUniforms(shaders[i], j);
 	}
 
 	for (int i = 0; i < objects.size(); i++)
 	{
-		objects[i].drawCall(objectShaders, view, projection, camera->getPosition());
+		objects[i].drawCall(shaders, view, projection, camera->getPosition());
 	}
 
 	for (int i = 0; i < lights.size(); i++)
-		lights[i].drawCall(lightShaders, view, projection, camera->getPosition());
+		lights[i].drawCall(shaders, view, projection, camera->getPosition());
 	return camera;
+}
+
+void Scene::setShader(std::string type, unsigned int index, unsigned int shaderIndex)
+{
+	if (shaderIndex >= shaders.size())
+	{
+		std::cout << "This shader index does not exists" << std::endl;
+		return;
+	}
+	if (type == "light")
+	{
+		if (index >= lights.size())
+		{
+			std::cout << "This index of light does not exists." << std::endl;
+			return;
+		}
+		lights[index].setShader(shaderIndex);
+	}
+	else if (type == "object")
+	{
+		if (index >= objects.size())
+		{
+			std::cout << "This index of object does not exists." << std::endl;
+			return;
+		}
+		objects[index].setShader(shaderIndex);
+	}
+	else {
+		std::cout << "Invalid type of object" << std::endl;
+	}
 }
 
 void Scene::addTexture(unsigned int objectIndex, const std::string& diffPath, const std::string& specularPath)
@@ -66,17 +110,18 @@ void Scene::addTexture(unsigned int objectIndex, const std::string& diffPath, co
 	objects[objectIndex].addMaps(diff_newPath, spec_newPath);
 }
 
-unsigned int Scene::addLightShader(const std::string& vs_path, const std::string& fs_path)
+void Scene::addLightTexture(unsigned int objectIndex, const std::string& diffPath, const std::string& specularPath)
 {
-	std::string vs_newPath = directory + "/shaders/" + vs_path;
-	std::string fs_newPath = directory + "/shaders/" + fs_path;
-	lightShaders.push_back(Shader(vs_newPath.c_str(), fs_newPath.c_str()));
-	return (lightShaders.size() - 1);
+	std::string diff_newPath = directory + "/textures/" + diffPath;
+	std::string spec_newPath = directory + "/textures/" + specularPath;
+	lights[objectIndex].addMaps(diff_newPath, spec_newPath);
 }
 
-void Scene::setLightModel(unsigned int lightIndex, unsigned int shaderIndex)
+void Scene::setLightModel(unsigned int lightIndex, glm::vec3 position)
 {
-	lights[lightIndex].addModel(shaderIndex);
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, position);
+	lights[lightIndex].addModel(model);
 }
 
 void Scene::updateLightModel(unsigned int lightIndex, unsigned int modelNo, float angle, glm::vec3 direction)
@@ -99,9 +144,11 @@ void Scene::updateLightModel(unsigned int lightIndex, unsigned int modelNo, floa
 	lights[lightIndex].updateModel(modelNo, scalex, scaley, scalez);
 }
 
-void Scene::setObjectModel(unsigned int objectIndex, unsigned int shaderIndex)
+void Scene::setObjectModel(unsigned int objectIndex, glm::vec3 position)
 {
-	objects[objectIndex].addModel(shaderIndex);
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, position);
+	objects[objectIndex].addModel(model);
 }
 
 void Scene::updateObjectModel(unsigned int objectIndex, unsigned int modelNo, float angle, glm::vec3 direction)

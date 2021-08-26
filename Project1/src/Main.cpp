@@ -57,6 +57,9 @@ void processInput(GLFWwindow* window)
 	}
 }
 
+std::shared_ptr<Scene> createScene1();
+std::shared_ptr<Scene> createScene2();
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse) {
@@ -103,58 +106,10 @@ int main()
 
 	// =====================================end of setting up imgui=======================
 
-	//Shader shader("shaders/VertexShader.shader", "shaders/FragmentShader.shader");
-	//Shader shader("scenes/scene1/shaders/vertexshader.shader", "scenes/scene1/shaders/fragmentshader.shader");
-	//Shader lightShader("scenes/scene1/shaders/vertexshader.shader", "scenes/scene1/shaders/lighting_fs2.shader");
-	
-	Scene scene("scenes/scene1");
-	unsigned int objectShader = scene.addObjectShader("vertexshader.shader", "fragmentshader.shader");
-	unsigned int lightingShader = scene.addLightShader("vertexshader.shader", "lighting_fs2.shader");
-	scene.addObject("cube_normals.txt");
-	scene.addObject("ground.txt");
-	scene.addLight("cube.txt", 0, glm::vec3(3.0f, 2.0f, 4.0));
-	scene.addLight("cube.txt", 0, glm::vec3(-3.0f, 2.0f, -4.0));
-	scene.setObjectModel(0, 0);
-	scene.setObjectModel(0, 0);
-	scene.setObjectModel(0, 0);
-	scene.setObjectModel(1, 0);
-	scene.updateObjectModel(0, 0, glm::vec3(0.0f, 0.5001f, 0.0f));
-	scene.updateObjectModel(0, 1, glm::vec3(0.0f, 1.50011f, 0.0f));
-	scene.updateObjectModel(0, 2, glm::vec3(1.0f, 0.5001f, 0.0f));
-	scene.addTexture(0, "diffuse.png", "specular.png");
-	scene.addTexture(1, "concrete.jpg", "concrete.jpg");
+	std::shared_ptr<Scene> scenes[10];
+	scenes[0] = createScene1();
+	scenes[1] = createScene2();
 
-	//Texture diffuse("scenes/scene1/textures/diffuse.png", true);
-	//Texture specular("scenes/scene1/textures/specular.png", true);
-	//diffuse.activeTexture(0);
-	//specular.activeTexture(1);
-
-	//Shader shader2("shaders/lighting_vs.shader", "shaders/lighting_fs2.shader");
-
-	// getting the texture image from the file system
-	// this function loads the image of any image type and converts it to char data
-	
-	// similar to VAO, VBO, EBO and shaders, the textures also work as objects and require
-	// a ID to reference the object
-	// 
-	//shader.use();
-	//// material
-	//shader.setInt("material.diffuse", 0);
-	//shader.setInt("material.specular", 1);
-	//shader.setFloat("material.shininess", 64.0f);
-
-	//// light distance components
-	//shader.setFloat("light.constant", 1.0f);
-	//shader.setFloat("light.linear", 0.09f);
-	//shader.setFloat("light.quadratic", 0.032f);
-
-	//// light properties
-	//shader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
-	//shader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f); // darken diffuse light a bit
-	//shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-
-	//lightShader.use();
-	//lightShader.setVec3("lightColor", lightColor);
 
 	double previousTime = glfwGetTime(), deltaTime = 0.0;
 	bool windowActive = true;
@@ -167,6 +122,7 @@ int main()
 		glfwPollEvents();
 
 
+		static int item_current_idx = 0; // Here we store our selection data as an index.
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -188,6 +144,24 @@ int main()
 			}
 			if (ImGui::Button("Load"))
 				cameraControls = true;
+
+			const char* items[] = { "BoxBox", "SolarSystem", "CCCC", "DDDD", "EEEE", "FFFF", "GGGG", "HHHH", "IIII", "JJJJ", "KKKK", "LLLLLLL", "MMMM", "OOOOOOO" };
+			if (ImGui::BeginListBox("listbox 1"))
+			{
+				for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+				{
+					const bool is_selected = (item_current_idx == n);
+					if (ImGui::Selectable(items[n], is_selected))
+						item_current_idx = n;
+
+					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+					if (is_selected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndListBox();
+			}
 			ImGui::End();
 		}
 		ImGui::Render();
@@ -230,9 +204,8 @@ int main()
 		//unsigned int transformloc = glGetUniformLocation(shader.getShaderID(), "transform");
 		//glUniformMatrix4fv(transformloc, 1, GL_FALSE, glm::value_ptr(trans));
 
-		glm::vec3 lightPos(3.0f, 2.0f, 4.0f);
+		camera = scenes[item_current_idx]->draw(window, w_width, w_height);
 
-		camera = scene.draw(window, w_width, w_height);
 
 		//shader.use();
 		//shader.setVec3("viewPos", camera->getPosition());
@@ -323,4 +296,38 @@ GLFWwindow* initOpengl()
 	// enabling the z-buffer
 	glEnable(GL_DEPTH_TEST);
 	return window;
+}
+
+std::shared_ptr<Scene> createScene1()
+{
+	auto scene = std::make_shared<Scene>("scenes/scene1");
+	unsigned int objectShader = scene->addShader("vertexshader.shader", "fragmentshader.shader");
+	unsigned int lightingShader = scene->addShader("vertexshader.shader", "lighting_fs2.shader");
+	scene->addObject("cube_normals.txt");
+	scene->addObject("ground.txt");
+	scene->addLight("cube.txt", 0, glm::vec3(3.0f, 2.0f, 4.0));
+	scene->addLight("cube.txt", 0, glm::vec3(-3.0f, 2.0f, -4.0));
+	scene->setObjectModel(0);
+	scene->setObjectModel(0);
+	scene->setObjectModel(0);
+	scene->setObjectModel(1);
+	scene->updateObjectModel(0, 0, glm::vec3(0.0f, 0.5001f, 0.0f));
+	scene->updateObjectModel(0, 1, glm::vec3(0.0f, 1.50011f, 0.0f));
+	scene->updateObjectModel(0, 2, glm::vec3(1.0f, 0.5001f, 0.0f));
+	scene->addTexture(0, "diffuse.png", "specular.png");
+	scene->addTexture(1, "concrete.jpg", "concrete.jpg");
+	return scene;
+}
+
+std::shared_ptr<Scene> createScene2()
+{
+	auto scene = std::make_shared<Scene>("scenes/scene2");
+	scene->addShader("vertexshader.shader", "fragmentshader.shader");
+	scene->addShader("vertexshader.shader", "lighting_fs2.shader");
+	scene->addShader("vertexshader.shader", "sun_fs.shader");
+	scene->addLight("sphere.txt", 0, glm::vec3(0, 0, 0));
+	scene->updateLightModel(0, 0, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	scene->addLightTexture(0, "8k_sun.jpg", "8k_sun.jpg");
+	scene->setShader("light", 0, 2);
+	return scene;
 }

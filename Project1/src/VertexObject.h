@@ -28,14 +28,16 @@ class VertexObject
 private:
 	unsigned int VAO, VBO, EBO = 0;
 	unsigned int bufferSize = 0;
+	unsigned int indices = 0;
 	std::vector<Attrib> attribs;
 	bool indexVertices = false;
 
 	unsigned int modelCount;
 	std::vector<glm::mat4> models;
-	std::map<unsigned int, unsigned int> modelShader;
 	std::vector<Texture> diffMaps;
 	std::vector<Texture> specularMaps;
+protected:
+	unsigned int shaderIndex;
 	
 public:
 	VertexObject(const std::string &path);
@@ -44,18 +46,20 @@ public:
 	unsigned int getId();
 	void init(float data[], int size);
 	void addIndices(unsigned int data[], unsigned int size);
+	void addIndices(const std::string path);
 	bool genIndices(float data[], int size);
 	unsigned int addAttributes(unsigned int size, unsigned int type, bool enable);
 	void enableAttribs();
 	void drawCall(std::vector<Shader>& shaders, glm::mat4& view, glm::mat4& projection, glm::vec3 viewPos);
 	void bind();
 	void unbind();
+	void setShader(unsigned int shaderIndex) { this->shaderIndex = shaderIndex; }
 
 	// texture management
 	void addMaps(const std::string& diffPath, const std::string& specularPath);
 
 	// multiple similar object management
-	void addModel(unsigned int shaderIndex, glm::mat4 model = glm::mat4(1.0f)) { models.push_back(model); modelShader[models.size() - 1] = shaderIndex; };
+	void addModel(glm::mat4 model = glm::mat4(1.0f)) { models.push_back(model); };
 	void updateModel(unsigned int index, float angle, glm::vec3 direction);
 	void updateModel(unsigned int index, glm::vec3 translate);
 	void updateModel(unsigned int index, float scale);

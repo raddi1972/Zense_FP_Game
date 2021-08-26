@@ -39,6 +39,7 @@ in vec3 normal;
 in vec3 fragPos;
 
 uniform vec3 viewPos;
+uniform int lightNo;
 
 // defined the material of the object
 
@@ -55,7 +56,7 @@ void main()
 	//CalcDirLight(dirLight, norm, viewDir);
 	vec3 result = vec3(0.0);
 	// point lights
-	for(int i = 0; i < NR_POINT_LIGHTS; i++)
+	for(int i = 0; i < lightNo; i++)
 		result += CalcPointLight(pointLights[i], norm, fragPos, viewDir);
 
 	FragColor = vec4(result, 1.0);
