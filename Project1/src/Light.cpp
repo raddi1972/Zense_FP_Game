@@ -1,6 +1,6 @@
 #include "Light.h"
 
-Light::Light(const std::string& path, unsigned int type, glm::vec3 lightPos, float constant, float linear, float quadratic, glm::vec3 lightColor) : VertexObject::VertexObject(path)
+Light::Light(const std::string& path, unsigned int type, glm::vec3 lightPos, std::string name, float constant, float linear, float quadratic, glm::vec3 lightColor) : VertexObject::VertexObject(path, name)
 {
 	shaderIndex = 1;
 	this->type = type;
@@ -9,8 +9,7 @@ Light::Light(const std::string& path, unsigned int type, glm::vec3 lightPos, flo
 	this->quadratic = quadratic;
 	this->lightColor = lightColor;
 	this->lightPos = lightPos;
-	this->addModel();
-	this->updateModel(0, lightPos);
+	this->updatePosition(lightPos);
 	setLightProperties();
 }
 

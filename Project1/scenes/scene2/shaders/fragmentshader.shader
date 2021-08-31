@@ -49,7 +49,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 void main()
 {
 	// normal and vieDir
-	vec3 norm = normalize(-normal);
+	vec3 norm = normalize(normal);
 	vec3 viewDir = normalize(viewPos - fragPos);
 
 	// directional light

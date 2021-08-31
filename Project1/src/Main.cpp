@@ -110,9 +110,14 @@ int main()
 	scenes[0] = createScene1();
 	scenes[1] = createScene2();
 
+	std::shared_ptr<Scene> current = scenes[0];
 
 	double previousTime = glfwGetTime(), deltaTime = 0.0;
+	double fp_previousTime = glfwGetTime(), fp_deltaTime = 0.0;
+	unsigned int frameCount = 0;
 	bool windowActive = true;
+	bool show_demo_window = true;
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	//int frameCount = 0;
 	// creating a render loop
 	while (!glfwWindowShouldClose(window))
@@ -129,7 +134,7 @@ int main()
 		ImGui::NewFrame();
 		if (windowActive)
 		{
-			ImGui::Begin("Load Camera", &windowActive, ImGuiWindowFlags_MenuBar);
+			ImGui::Begin("Load Camera", &windowActive);
 
 			if (ImGui::BeginMenuBar())
 			{
@@ -164,7 +169,30 @@ int main()
 			}
 			ImGui::End();
 		}
-		ImGui::Render();
+
+		if(show_demo_window){
+			static float f = 0.0f;
+			static int counter = 0;
+
+			ImGui::Begin("Hello, world!", &show_demo_window);                          // Create a window called "Hello, world!" and append into it.
+
+			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+			//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+			//ImGui::Checkbox("Another Window", &show_another_window);
+
+			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+				counter++;
+			ImGui::SameLine();
+			ImGui::Text("counter = %d", counter);
+
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
+		}
+
+
 
 		// camera stuff
 		if (cameraControls && !isLoaded) {
@@ -177,14 +205,16 @@ int main()
 		double currentTime = glfwGetTime();
 		deltaTime = currentTime - previousTime;
 		previousTime = currentTime;
-		//frameCount++;
+		double fp_currentTime = glfwGetTime();
+		fp_deltaTime = fp_currentTime - fp_previousTime;
+		frameCount++;
 		// code for fps
-		/*if (deltaTime >= 1.0)
+		if (fp_deltaTime >= 1.0)
 		{
 			std::cout << frameCount << std::endl;
 			frameCount = 0;
-			previousTime = currentTime;
-		}*/
+			fp_previousTime = fp_currentTime;
+		}
 
 		// input commands
 		if(camera)
@@ -195,65 +225,68 @@ int main()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT); // clearing the color buffer (state-using function)
 
-
-
-		// translating and rotating the rectangle
-		//glm::mat4 trans = glm::mat4(1.0f);
-		//trans = glm::translate(trans, glm::vec3(0.5, -0.5, 0.0));
-		//trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
-		//unsigned int transformloc = glGetUniformLocation(shader.getShaderID(), "transform");
-		//glUniformMatrix4fv(transformloc, 1, GL_FALSE, glm::value_ptr(trans));
-
-		camera = scenes[item_current_idx]->draw(window, w_width, w_height);
-
-
-		//shader.use();
-		//shader.setVec3("viewPos", camera->getPosition());
-		//shader.setVec3("lightPos", lightPos);
-
-
-
-		//glm::mat4 view = camera->getView();
-		//int viewLoc = glGetUniformLocation(shader.getShaderID(), "view");
-		//glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-		// creating the projection matrix
-		//glm::mat4 projection = glm::mat4(1.0f);
-		//projection = glm::perspective(glm::radians(camera->getZoom()), (float)w_width / (float)w_height, 0.1f, 100.0f);
-
-		//int projectionLoc = glGetUniformLocation(shader.getShaderID(), "projection");
-		//glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-		//glm::mat4 model = glm::mat4(1.0f);
-		//model = glm::rotate(model, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-		//model = glm::rotate(model, 180.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		//model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f));
-		//model = glm::scale(model, glm::vec3(0.01f));
-
-		//int modelLoc = glGetUniformLocation(shader.getShaderID(), "model");
-		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		//object.drawCall();
-
-
-		// The draw call
-		//lightShader.use();
-		//model = glm::mat4(1.0f);
-		//model = glm::translate(model, lightPos);
-		//model = glm::scale(model, glm::vec3(0.2f));
-
-		//modelLoc = glGetUniformLocation(lightShader.getShaderID(), "model");
-		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-		//viewLoc = glGetUniformLocation(lightShader.getShaderID(), "view");
-		//glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-		//projectionLoc = glGetUniformLocation(lightShader.getShaderID(), "projection");
-		//glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-		//light.bind();
-		//light.drawCall();
-
-
+		current = scenes[item_current_idx];
+		camera = current->draw(window, w_width, w_height);
+		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		std::vector<VertexObject>& objects = current->getObjects();
+		std::vector<Light>& lights = current->getLights();
+
+		for (int i = 0; i < objects.size(); i++)
+		{
+			if (objects[i].name == "Earth")
+			{
+				//std::cout << "lesgo" << std::endl;
+				objects[i].rotate(0.2f, glm::vec3(0.0f, 0.0f, -1.0f));
+				float radius = 14.0f;
+				float earthX = radius * sin(glfwGetTime() / 4);
+				float earthZ = radius * cos(glfwGetTime() / 4);
+				objects[i].updatePosition(glm::vec3(earthX, 0.0f, earthZ));
+			}
+			else if (objects[i].name == "Mercury")
+			{
+				objects[i].rotate(0.2f, glm::vec3(0.0f, 0.0f, -1.0f));
+				float radius = 6.0f;
+				float mercsX = radius * sin(glfwGetTime() / 3.5);
+				float mercsZ = radius * cos(glfwGetTime() / 3.5);
+				objects[i].updatePosition(glm::vec3(mercsX, 0.0f, mercsZ));
+			}
+			else if (objects[i].name == "Venus")
+			{
+				objects[i].rotate(0.2f, glm::vec3(0.0f, 0.0f, -1.0f));
+				float radius = 9.0f;
+				float venusX = radius * sin(glfwGetTime() / 2.5);
+				float venusZ = radius * cos(glfwGetTime() / 2.5);
+				objects[i].updatePosition(glm::vec3(venusX, 0.0f, venusZ));
+			}
+			else if (objects[i].name == "Mars")
+			{
+				objects[i].rotate(0.2f, glm::vec3(0.0f, 0.0f, -1.0f));
+				float radius = 15.0f;
+				float marsX = radius * sin(glfwGetTime() / 3.0);
+				float marsZ = radius * cos(glfwGetTime() / 3.0);
+				objects[i].updatePosition(glm::vec3(marsX, 0.0f, marsZ));
+			}
+			else if (objects[i].name == "Jupiter")
+			{
+				objects[i].rotate(0.2f, glm::vec3(0.0f, 0.0f, -1.0f));
+				float radius = 20.0f;
+				float jupiterX = radius * sin(glfwGetTime() / 1.6);
+				float jupiterZ = radius * cos(glfwGetTime() / 1.6);
+				objects[i].updatePosition(glm::vec3(jupiterX, 0.0f, jupiterZ));
+			}
+		}
+
+		for (int i = 0; i < lights.size(); i++)
+		{
+			if (lights[i].name == "Sun")
+			{
+				//std::cout << "lesgo" << std::endl;
+				lights[i].rotate(0.05f, glm::vec3(0.0f, 0.0f, 1.0f));
+			}
+		}
+		
 		
 		// swaps the buffers (two buffers front and back, back is updated with the changes)
 		glfwSwapBuffers(window);
@@ -303,19 +336,20 @@ std::shared_ptr<Scene> createScene1()
 	auto scene = std::make_shared<Scene>("scenes/scene1");
 	unsigned int objectShader = scene->addShader("vertexshader.shader", "fragmentshader.shader");
 	unsigned int lightingShader = scene->addShader("vertexshader.shader", "lighting_fs2.shader");
-	scene->addObject("cube_normals.txt");
-	scene->addObject("ground.txt");
-	scene->addLight("cube.txt", 0, glm::vec3(3.0f, 2.0f, 4.0));
-	scene->addLight("cube.txt", 0, glm::vec3(-3.0f, 2.0f, -4.0));
-	scene->setObjectModel(0);
-	scene->setObjectModel(0);
-	scene->setObjectModel(0);
-	scene->setObjectModel(1);
-	scene->updateObjectModel(0, 0, glm::vec3(0.0f, 0.5001f, 0.0f));
-	scene->updateObjectModel(0, 1, glm::vec3(0.0f, 1.50011f, 0.0f));
-	scene->updateObjectModel(0, 2, glm::vec3(1.0f, 0.5001f, 0.0f));
+	scene->addObject("cube.txt", "Cube1");
+	scene->addObject("cube.txt", "Cube2");
+	scene->addObject("cube.txt", "Cube3");
+	scene->addObject("ground.txt", "ground");
+	std::vector<VertexObject>& objects = scene->getObjects();
+	scene->addLight("cube.txt", 0, glm::vec3(3.0f, 2.0f, 4.0), "Light1");
+	scene->addLight("cube.txt", 0, glm::vec3(-3.0f, 2.0f, -4.0), "Light2");
+	scene->updateObjectPosition("object", 0, glm::vec3(0.0f, 0.5001f, 0.0f));
+	scene->updateObjectPosition("object", 1, glm::vec3(0.0f, 1.50011f, 0.0f));
+	scene->updateObjectPosition("object", 2, glm::vec3(1.0f, 0.5001f, 0.0f));
 	scene->addTexture(0, "diffuse.png", "specular.png");
-	scene->addTexture(1, "concrete.jpg", "concrete.jpg");
+	scene->addTexture(1, "diffuse.png", "specular.png");
+	scene->addTexture(2, "diffuse.png", "specular.png");
+	scene->addTexture(3, "concrete.jpg", "concrete.jpg");
 	return scene;
 }
 
@@ -325,9 +359,55 @@ std::shared_ptr<Scene> createScene2()
 	scene->addShader("vertexshader.shader", "fragmentshader.shader");
 	scene->addShader("vertexshader.shader", "lighting_fs2.shader");
 	scene->addShader("vertexshader.shader", "sun_fs.shader");
-	scene->addLight("sphere.txt", 0, glm::vec3(0, 0, 0));
-	scene->updateLightModel(0, 0, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	scene->addLight("sphere.txt", 0, glm::vec3(0, 0, 0), "Sun");
+	scene->addObject("sphere.txt", "Mercury");
+	scene->addObject("sphere.txt", "Venus");
+	scene->addObject("sphere.txt", "Earth");
+	scene->addObject("sphere.txt", "Mars");
+	scene->addObject("sphere.txt", "Jupiter");
+
 	scene->addLightTexture(0, "8k_sun.jpg", "8k_sun.jpg");
+	scene->addTexture(0, "2k_mercury.jpg", "2k_mercury.jpg");
+	scene->addTexture(1, "2k_venus_atmosphere.jpg", "2k_venus_atmosphere.jpg");
+	scene->addTexture(2, "2k_earth_daymap.jpg", "2k_earth_daymap.jpg", false, false);
+	scene->addTexture(3, "2k_mars.jpg", "2k_mars.jpg");
+	scene->addTexture(4, "2k_jupiter.jpg", "2k_jupiter.jpg");
+	std::vector<VertexObject>& objects = scene->getObjects();
+	for (int i = 0; i < objects.size(); i++)
+	{
+		objects[i].rotate(90.0f, glm::vec3(-1.0f, 0.0f, 0.0f));
+		if (objects[i].name == "Mercury")
+		{
+			objects[i].updatePosition(glm::vec3(6.0f, 0.0f, 0.0f));
+			objects[i].scaleObject(0.05f);
+		}
+		if (objects[i].name == "Venus")
+		{
+			objects[i].updatePosition(glm::vec3(9.0f, 0.0f, 0.0f));
+			objects[i].scaleObject(0.1f);
+		}
+		if (objects[i].name == "Earth")
+		{
+			objects[i].updatePosition(glm::vec3(12.0f, 0.0f, 0.0f));
+			objects[i].scaleObject(0.17f);
+		}
+		if (objects[i].name == "Mars")
+		{
+			objects[i].updatePosition(glm::vec3(15.0f, 0.0f, 0.0f));
+			objects[i].scaleObject(0.15f);
+		}
+		if (objects[i].name == "Jupiter")
+		{
+			objects[i].updatePosition(glm::vec3(20.0f, 0.0f, 0.0f));
+			objects[i].scaleObject(0.3f);
+		}
+	}
+	std::vector<Light>& lights = scene->getLights();
+	for (int i = 0; i < lights.size(); i++)
+	{
+		lights[i].rotate(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+		lights[i].setLightProperties(glm::vec3(1.0f, 1.0f, 1.0f));
+	}
 	scene->setShader("light", 0, 2);
 	return scene;
 }

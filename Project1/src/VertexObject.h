@@ -2,12 +2,13 @@
 
 #include <iostream>
 #include <map>
+#include <utility>
+#include <memory>
 #include <glad/glad.h>
 #include <vector>
 #include <string>
 #include <fstream>
 #include <sstream>
-#include <memory>
 #include "shader.h"
 #include "Texture.h"
 
@@ -15,53 +16,68 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-struct Attrib
+struct Vertex
 {
-	unsigned int size = 0;
-	unsigned int type = GL_FLOAT;
-	unsigned int bytes = 0;
-	bool toEnable;
+	float x, y, z;
+};
+
+struct TexCoord
+{
+	float s, t;
+};
+
+struct Normal
+{
+	float x, y, z;
+};
+
+struct VertexData
+{
+	Vertex vertex;
+	TexCoord texCoord;
+	Normal normal;
 };
 
 class VertexObject
 {
 private:
 	unsigned int VAO, VBO, EBO = 0;
-	unsigned int bufferSize = 0;
+	unsigned int vertices = 0;
 	unsigned int indices = 0;
-	std::vector<Attrib> attribs;
 	bool indexVertices = false;
 
-	unsigned int modelCount;
-	std::vector<glm::mat4> models;
-	std::vector<Texture> diffMaps;
-	std::vector<Texture> specularMaps;
+	std::unique_ptr<Texture> diffMap;
+	std::unique_ptr<Texture> specularMap;
+
+	// for rotation on axis
 protected:
 	unsigned int shaderIndex;
+	glm::vec3 position;
+	std::vector<std::pair<float, glm::vec3>> rotations;
+	float scale;
+	// can read vertices and indices, 
+	// For index it will expect a file named path - extension + "_ind" + extension
+	// it will return the data in form of pair with first being a pointer to vertex data and
+	// second being pointer to index data
+	static std::pair<VertexData*, unsigned int*> readData(const std::string& path, unsigned int& vertexCount, unsigned int& indexCount);
 	
 public:
-	VertexObject(const std::string &path);
-	VertexObject(float data[], int size);
+	std::string name;
+
+	VertexObject(const std::string &path, std::string name);
 
 	unsigned int getId();
-	void init(float data[], int size);
+	void init(VertexData data[], int size);
 	void addIndices(unsigned int data[], unsigned int size);
-	void addIndices(const std::string path);
-	bool genIndices(float data[], int size);
-	unsigned int addAttributes(unsigned int size, unsigned int type, bool enable);
-	void enableAttribs();
 	void drawCall(std::vector<Shader>& shaders, glm::mat4& view, glm::mat4& projection, glm::vec3 viewPos);
 	void bind();
 	void unbind();
 	void setShader(unsigned int shaderIndex) { this->shaderIndex = shaderIndex; }
 
 	// texture management
-	void addMaps(const std::string& diffPath, const std::string& specularPath);
+	void addMaps(const std::string& diffPath, const std::string& specularPath, bool flipDiff, bool flipSpec);
 
-	// multiple similar object management
-	void addModel(glm::mat4 model = glm::mat4(1.0f)) { models.push_back(model); };
-	void updateModel(unsigned int index, float angle, glm::vec3 direction);
-	void updateModel(unsigned int index, glm::vec3 translate);
-	void updateModel(unsigned int index, float scale);
-	void updateModel(unsigned int index, float scalex, float scaley, float scalez);
+	void updatePosition(glm::vec3 translate);
+	void rotate(float angle, glm::vec3 dir);
+	void scaleObject(float scale);
 };

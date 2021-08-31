@@ -21,12 +21,22 @@ Texture::Texture(const std::string& path, bool flip)
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
 	unsigned int dataType = GL_RGB;
+	unsigned int dataOut = GL_COMPRESSED_RGB;
 	if (nrChannels == 1)
+	{
 		dataType = GL_RED;
+		dataOut = GL_COMPRESSED_RED;
+	}
 	else if (nrChannels == 3)
+	{
 		dataType = GL_RGB;
+		dataOut = GL_COMPRESSED_RGB;
+	}
 	else if (nrChannels == 4)
+	{
 		dataType = GL_RGBA;
+		dataOut = GL_COMPRESSED_RGBA;
+	}
 
 	// adding the texture data to the object
 	if (data)

@@ -219,7 +219,6 @@
   <ItemGroup>
     <Text Include="backpack\source_attribution.txt" />
     <Text Include="scenes\scene1\VertexData\cube.txt" />
-    <Text Include="scenes\scene1\VertexData\cube_normals.txt" />
     <Text Include="scenes\scene1\VertexData\ground.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -10,7 +10,7 @@ Scene::Scene(std::string path, float np, float fp) : directory(path)
 
 	// setting up the camera for view matrix
 	// only 1 camera per scene
-	camera = std::make_shared<Camera>(glm::vec3(0.0f, 1.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	camera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 Scene::~Scene()
@@ -18,24 +18,16 @@ Scene::~Scene()
 	std::cout << "Object Deleted" << std::endl;
 }
 
-void Scene::addObject(const std::string& path)
+void Scene::addObject(const std::string& path, std::string name)
 {
 	std::string newPath = directory + "/VertexData/" + path;
-	objects.push_back(VertexObject(newPath));
-	int pos = newPath.find('.');
-	std::string indexPath = newPath.substr(0, pos) + "_indices.txt";
-	std::cout << indexPath << std::endl;
-	objects[objects.size() - 1].addIndices(indexPath);
+	objects.push_back(VertexObject(newPath, name));
 }
 
-void Scene::addLight(const std::string& path, unsigned int type, glm::vec3 lightPos)
+void Scene::addLight(const std::string& path, unsigned int type, glm::vec3 lightPos, std::string name)
 {
 	std::string newPath = directory + "/VertexData/" + path;
-	lights.push_back(Light(newPath, type, lightPos));
-	int pos = newPath.find('.');
-	std::string indexPath = newPath.substr(0, pos) + "_indices.txt";
-	std::cout << indexPath << std::endl;
-	lights[lights.size() - 1].addIndices(indexPath);
+	lights.push_back(Light(newPath, type, lightPos, name));
 }
 
 unsigned int Scene::addShader(const std::string& vs_path, const std::string& fs_path)
@@ -103,70 +95,65 @@ void Scene::setShader(std::string type, unsigned int index, unsigned int shaderI
 	}
 }
 
-void Scene::addTexture(unsigned int objectIndex, const std::string& diffPath, const std::string& specularPath)
+std::vector<VertexObject>& Scene::getObjects()
+{
+	// TODO: insert return statement here
+	return objects;
+}
+
+std::vector<Light>& Scene::getLights()
+{
+	// TODO: insert return statement here
+	return lights;
+}
+
+void Scene::addTexture(unsigned int objectIndex, const std::string& diffPath, const std::string& specularPath, bool flipDiff, bool flipSpec)
 {
 	std::string diff_newPath = directory + "/textures/" + diffPath;
 	std::string spec_newPath = directory + "/textures/" + specularPath;
-	objects[objectIndex].addMaps(diff_newPath, spec_newPath);
+	objects[objectIndex].addMaps(diff_newPath, spec_newPath, flipDiff, flipSpec);
 }
 
 void Scene::addLightTexture(unsigned int objectIndex, const std::string& diffPath, const std::string& specularPath)
 {
 	std::string diff_newPath = directory + "/textures/" + diffPath;
 	std::string spec_newPath = directory + "/textures/" + specularPath;
-	lights[objectIndex].addMaps(diff_newPath, spec_newPath);
+	lights[objectIndex].addMaps(diff_newPath, spec_newPath, true, true);
 }
 
-void Scene::setLightModel(unsigned int lightIndex, glm::vec3 position)
+void Scene::updateLightPorperties(unsigned int objectIndex, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular)
 {
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, position);
-	lights[lightIndex].addModel(model);
+	lights[objectIndex].setLightProperties(ambient, diffuse, specular);
 }
 
-void Scene::updateLightModel(unsigned int lightIndex, unsigned int modelNo, float angle, glm::vec3 direction)
+void Scene::updateObjectPosition(std::string type, unsigned int objectIndex, glm::vec3 translate)
 {
-	lights[lightIndex].updateModel(modelNo, angle, direction);
+	if (objectIndex >= objects.size())
+	{
+		std::cout << "This shader index does not exists" << std::endl;
+		return;
+	}
+	if (type == "light")
+	{
+		if (objectIndex >= lights.size())
+		{
+			std::cout << "This index of light does not exists." << std::endl;
+			return;
+		}
+		lights[objectIndex].updatePosition(translate);
+	}
+	else if (type == "object")
+	{
+		if (objectIndex >= objects.size())
+		{
+			std::cout << "This index of object does not exists." << std::endl;
+			return;
+		}
+		objects[objectIndex].updatePosition(translate);
+	}
+	else {
+		std::cout << "Invalid type of object" << std::endl;
+	}
 }
 
-void Scene::updateLightModel(unsigned int lightIndex, unsigned int modelNo, glm::vec3 translate)
-{
-	lights[lightIndex].updateModel(modelNo, translate);
-}
 
-void Scene::updateLightModel(unsigned int lightIndex, unsigned int modelNo, float scale)
-{
-	lights[lightIndex].updateModel(modelNo, scale);
-}
-
-void Scene::updateLightModel(unsigned int lightIndex, unsigned int modelNo, float scalex, float scaley, float scalez)
-{
-	lights[lightIndex].updateModel(modelNo, scalex, scaley, scalez);
-}
-
-void Scene::setObjectModel(unsigned int objectIndex, glm::vec3 position)
-{
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, position);
-	objects[objectIndex].addModel(model);
-}
-
-void Scene::updateObjectModel(unsigned int objectIndex, unsigned int modelNo, float angle, glm::vec3 direction)
-{
-	objects[objectIndex].updateModel(modelNo, angle, direction);
-}
-
-void Scene::updateObjectModel(unsigned int objectIndex, unsigned int modelNo, glm::vec3 translate)
-{
-	objects[objectIndex].updateModel(modelNo, translate);
-}
-
-void Scene::updateObjectModel(unsigned int objectIndex, unsigned int modelNo, float scale)
-{
-	objects[objectIndex].updateModel(modelNo, scale);
-}
-
-void Scene::updateObjectModel(unsigned int objectIndex, unsigned int modelNo, float scalex, float scaley, float scalez)
-{
-	objects[objectIndex].updateModel(modelNo, scalex, scaley, scalez);
-}
