@@ -31,14 +31,14 @@ void Model::processNode(aiNode* node, const aiScene* scene)
 
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
-	std::vector<Vertex> vertices;
+	std::vector<Ver> vertices;
 	std::vector<unsigned int> indices;
-	std::vector<Texture> textures;
+	std::vector<Tex> textures;
 
 	// fetching the vertex data from mesh
 	for (int i = 0; i < mesh->mNumVertices; i++)
 	{
-		Vertex vertex;
+		Ver vertex;
 		glm::vec3 vector;
 		vector.x = mesh->mVertices[i].x;
 		vector.y = mesh->mVertices[i].y;
@@ -75,17 +75,17 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	if (mesh->mMaterialIndex >= 0)
 	{
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+		std::vector<Tex> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-		std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+		std::vector<Tex> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	}
 	return Mesh(vertices, indices, textures);
 }
 
-std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
+std::vector<Tex> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
 {
-	std::vector<Texture> textures;
+	std::vector<Tex> textures;
 	for (int i = 0; i < mat->GetTextureCount(type); i++)
 	{
 		aiString str;
@@ -102,7 +102,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 		}
 		if(!skip)
 		{
-			Texture texture;
+			Tex texture;
 			texture.id = TextureFromFile(str.C_Str(), directory);
 			texture.type = typeName;
 			texture.path = str.C_Str();

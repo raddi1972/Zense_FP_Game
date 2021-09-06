@@ -2,6 +2,7 @@
 
 Light::Light(const std::string& path, unsigned int type, glm::vec3 lightPos, std::string name, float constant, float linear, float quadratic, glm::vec3 lightColor) : VertexObject::VertexObject(path, name)
 {
+	// setting up the starter values
 	shaderIndex = 1;
 	this->type = type;
 	this->constant = constant;
@@ -18,13 +19,6 @@ void Light::setLightProperties(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 s
 	this->ambient = ambient;
 	this->diffuse = diffuse;
 	this->specular = specular;
-}
-
-
-
-void Light::drawCall(std::vector<Shader>& shaders, glm::mat4& view, glm::mat4& projection, glm::vec3 viewDir)
-{
-	VertexObject::drawCall(shaders, view, projection, viewDir);
 }
 
 void Light::setUniforms(Shader& shader, unsigned int index)

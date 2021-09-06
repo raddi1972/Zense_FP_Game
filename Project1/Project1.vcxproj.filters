@@ -82,6 +82,7 @@
     <None Include="scenes\scene1\shaders\fragmentshader.shader" />
     <None Include="scenes\scene1\shaders\lighting_fs2.shader" />
     <None Include="scenes\scene2\shaders\sun_fs.shader" />
+    <None Include="scenes\scene3\shaders\sun_fs.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shader.h">
@@ -175,5 +176,6 @@
     <Text Include="backpack\source_attribution.txt" />
     <Text Include="scenes\scene1\VertexData\cube.txt" />
     <Text Include="scenes\scene1\VertexData\ground.txt" />
+    <Text Include="scenes\scene3\VertexData\cube.txt" />
   </ItemGroup>
 </Project>

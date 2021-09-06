@@ -1,6 +1,7 @@
 #include "Mesh.h"
+#include "Debug.h"
 
-Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Texture>& textures)
+Mesh::Mesh(std::vector<Ver>& vertices, std::vector<unsigned int>& indices, std::vector<Tex>& textures)
 {
 	this->vertices = vertices;
 	this->indices = indices;
@@ -11,8 +12,9 @@ Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, st
 
 void Mesh::Draw(Shader& shader)
 {
-	unsigned int diffuseNr = 1;
-	unsigned int specularNr = 1;
+	unsigned int diffuseNr = 0;
+	unsigned int specularNr = 0;
+	shader.use();
 	for (int i = 0; i < textures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
@@ -20,40 +22,47 @@ void Mesh::Draw(Shader& shader)
 		std::string number;
 		std::string name = textures[i].type;
 		if (name == "texture_diffuse")
+		{
 			number = std::to_string(diffuseNr++);
+			name = "diffuse";
+		}
 		else if (name == "texture_specular")
+		{
 			number = std::to_string(specularNr++);
-		shader.setInt(("material." + name + number).c_str(), i);
-		glBindTexture(GL_TEXTURE_2D, textures[i].id);
+			name = "specular";
+		}
+		shader.setInt(("materials[" + number + "]." + name).c_str(), i);
+		shader.setFloat(("materials[" + number + "].shininess").c_str(), 128.0f);
+		GLCall(glBindTexture(GL_TEXTURE_2D, textures[i].id));
 	}
 	// draw mesh
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+	GLCall(glBindVertexArray(VAO));
+	GLCall(glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0));
+	GLCall(glBindVertexArray(0));
 }
 
 void Mesh::setupMesh()
 {
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	GLCall(glGenVertexArrays(1, &VAO));
+	GLCall(glGenBuffers(1, &VBO));
+	GLCall(glGenBuffers(1, &EBO));
 
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+	GLCall(glBindVertexArray(VAO));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, VBO));
+	GLCall(glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Ver), &vertices[0], GL_STATIC_DRAW));
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO));
+	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW));
 
 	// vertex positions
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-	// vertex normals
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+	GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Ver), (void*)0));
+	GLCall(glEnableVertexAttribArray(0));
 	// vertex texture coords
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+	GLCall(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Ver), (void*)offsetof(Ver, texCoords)));
+	GLCall(glEnableVertexAttribArray(1));
+	// vertex normals
+	GLCall(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Ver), (void*)offsetof(Ver, normal)));
+	GLCall(glEnableVertexAttribArray(2));
 
-	glBindVertexArray(0);
+	GLCall(glBindVertexArray(0));
 }

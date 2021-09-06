@@ -1,2 +1,46 @@
-﻿  Texture.cpp
-  Project1.vcxproj -> D:\cpp_projects\Project1\x64\Debug\Project1.exe
+﻿  Light.cpp
+  Main.cpp
+E:\Zense_FP_Game\Project1\src\Main.cpp(67,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(68,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(72,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(73,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(74,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(75,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(84,16): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(231,43): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(231,34): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(245,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(246,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(253,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(254,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(261,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(262,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(269,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(270,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(277,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(278,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\Zense_FP_Game\Project1\src\Main.cpp(422,77): warning C4305: 'argument': truncation from 'double' to 'float'
+  Scene.cpp
+E:\Zense_FP_Game\Project1\src\Scene.cpp(44,29): warning C4267: 'return': conversion from 'size_t' to 'unsigned int', possible loss of data
+E:\Zense_FP_Game\Project1\src\Scene.cpp(61,45): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  VertexObject.cpp
+E:\Zense_FP_Game\Project1\src\VertexObject.cpp(8,34): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+E:\Zense_FP_Game\Project1\src\VertexObject.cpp(38,20): warning C4018: '<': signed/unsigned mismatch
+E:\Zense_FP_Game\Project1\src\VertexObject.cpp(73,20): warning C4018: '<': signed/unsigned mismatch
+  Generating Code...
+glfw3.lib(context.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(context.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(init.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(init.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(input.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(input.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(monitor.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(monitor.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(vulkan.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(vulkan.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(window.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(window.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(win32_init.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(win32_init.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(win32_joystick.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(win32_joystick.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(win32_monitor.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(win32_monitor.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(win32_time.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(win32_time.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(win32_thread.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(win32_thread.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(win32_window.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(win32_window.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(wgl_context.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(wgl_context.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(egl_context.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(egl_context.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+glfw3.lib(osmesa_context.obj) : warning LNK4099: PDB 'glfw3.pdb' was not found with 'glfw3.lib(osmesa_context.obj)' or at 'E:\Zense_FP_Game\x64\Debug\glfw3.pdb'; linking object as if no debug info
+  Project1.vcxproj -> E:\Zense_FP_Game\x64\Debug\Project1.exe

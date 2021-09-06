@@ -24,7 +24,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-//#include "Model.h"
+#include "Model.h"
 
 // some global variables
 std::shared_ptr<Camera> camera;
@@ -59,6 +59,7 @@ void processInput(GLFWwindow* window)
 
 std::shared_ptr<Scene> createScene1();
 std::shared_ptr<Scene> createScene2();
+std::shared_ptr<Scene> createScene3();
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
@@ -109,6 +110,7 @@ int main()
 	std::shared_ptr<Scene> scenes[10];
 	scenes[0] = createScene1();
 	scenes[1] = createScene2();
+	scenes[2] = createScene3();
 
 	std::shared_ptr<Scene> current = scenes[0];
 
@@ -150,7 +152,7 @@ int main()
 			if (ImGui::Button("Load"))
 				cameraControls = true;
 
-			const char* items[] = { "BoxBox", "SolarSystem", "CCCC", "DDDD", "EEEE", "FFFF", "GGGG", "HHHH", "IIII", "JJJJ", "KKKK", "LLLLLLL", "MMMM", "OOOOOOO" };
+			const char* items[] = { "BoxBox", "SolarSystem", "Backpack"};
 			if (ImGui::BeginListBox("listbox 1"))
 			{
 				for (int n = 0; n < IM_ARRAYSIZE(items); n++)
@@ -409,5 +411,21 @@ std::shared_ptr<Scene> createScene2()
 		lights[i].setLightProperties(glm::vec3(1.0f, 1.0f, 1.0f));
 	}
 	scene->setShader("light", 0, 2);
+	return scene;
+}
+
+std::shared_ptr<Scene> createScene3()
+{
+	auto scene = std::make_shared<Scene>("scenes/scene3");
+	scene->addShader("vertexshader.shader", "fragmentshader.shader");
+	scene->addShader("vertexshader.shader", "lighting_fs2.shader");
+	scene->addLight("cube.txt", 0, glm::vec3(0, 8, 5), "Box", 1,  0.045, 0.0075);
+	std::vector<Light>& lights = scene->getLights();
+	for (int i = 0; i < lights.size(); i++)
+	{
+		lights[i].rotate(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+		lights[i].setLightProperties(glm::vec3(0.25f, 0.25f, 0.25f), glm::vec3(1.5f));
+	}
+	scene->addModel("backpack.obj");
 	return scene;
 }

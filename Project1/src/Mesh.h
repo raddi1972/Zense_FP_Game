@@ -9,13 +9,13 @@
 #include <vector>
 #include "shader.h"
 
-struct Vertex {
+struct Ver {
 	glm::vec3 position;
-	glm::vec3 normal;
 	glm::vec2 texCoords;
+	glm::vec3 normal;
 };
 
-struct Texture {
+struct Tex {
 	unsigned int id;
 	std::string type;
 	std::string path;
@@ -25,11 +25,11 @@ class Mesh
 {
 public:
 	// mesh data
-	std::vector<Vertex> vertices;
+	std::vector<Ver> vertices;
 	std::vector<unsigned int> indices;
-	std::vector<Texture> textures;
+	std::vector<Tex> textures;
 
-	Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Texture>& textures);
+	Mesh(std::vector<Ver>& vertices, std::vector<unsigned int>& indices, std::vector<Tex>& textures);
 	void Draw(Shader& shader);
 
 private:

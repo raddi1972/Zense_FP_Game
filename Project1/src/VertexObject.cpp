@@ -17,9 +17,12 @@ std::pair<VertexData*, unsigned int*> VertexObject::readData(const std::string& 
 		indexCount = 0;
 		return std::pair<VertexData*, unsigned int*>(nullptr, nullptr);
 	}
+
+	// string stream to get the data from file to string stream
 	std::stringstream ss;
 	std::string s;
-
+	
+	// getting the stuff from file
 	while (std::getline(vertexData, s))
 	{
 		ss << s << std::endl;
@@ -30,6 +33,7 @@ std::pair<VertexData*, unsigned int*> VertexObject::readData(const std::string& 
 
 	vertexCount = noOfVertices;
 
+	// converting the data to a passable form
 	VertexData *verData = new VertexData[noOfVertices];
 	for (int i = 0; i < noOfVertices; i++)
 	{
@@ -45,7 +49,8 @@ std::pair<VertexData*, unsigned int*> VertexObject::readData(const std::string& 
 		verData[i] = f;
 	}
 
-	//getting index data
+	//getting index data (mostly same thing as reading VertexObject except this is optional and should follow the neaming
+	// convention of path + _indices naming scheme)
 	std::ifstream indexData(indexPath);
 	if (indexData.fail())
 	{
@@ -71,6 +76,8 @@ std::pair<VertexData*, unsigned int*> VertexObject::readData(const std::string& 
 		ss >> index;
 		indData[i] = index;
 	}
+
+	// returning a pair of the pointers to the read data
 	return std::pair<VertexData*, unsigned int*>(verData, indData);
 }
 
@@ -84,12 +91,17 @@ VertexObject::VertexObject(const std::string& path, std::string name)
 		std::cout << "Error Creating object" << std::endl;
 		return;
 	}
+	// initializing the vertices
 	init(pair.first, vertices);
+
+	// checking if indices exists and then setting
 	if (pair.second)
 	{
 		addIndices(pair.second, indices);
 		indexVertices = true;
 	}
+
+	// deleting the set data, as we no longer need it
 	if(pair.first)
 		delete[] pair.first;
 	if(pair.second)
@@ -105,6 +117,8 @@ unsigned int VertexObject::getId()
 
 void VertexObject::init(VertexData data[], int size)
 {
+	// low level opengl stuff
+
 	// generating the vertex array object and vertex buffer object
 	GLCall(glGenVertexArrays(1, &VAO));
 	GLCall(glGenBuffers(1, &VBO));
@@ -126,6 +140,8 @@ void VertexObject::init(VertexData data[], int size)
 
 void VertexObject::addIndices(unsigned int data[], unsigned int size)
 {
+	// low level opengl stuff
+
 	// we bind the VAO again for security reason
 	GLCall(glBindVertexArray(VAO));
 
@@ -142,26 +158,31 @@ void VertexObject::addIndices(unsigned int data[], unsigned int size)
 
 void VertexObject::drawCall(std::vector<Shader>& shaders, glm::mat4& view, glm::mat4& projection, glm::vec3 viewPos)
 {
-	bind();
+
+	bind(); // binding the VAO
+
+	// setting up the correct shader program
 	Shader current = shaders[shaderIndex];
 	current.use();
 	current.setMat4("view", view);
 	current.setMat4("projection", projection);
 	current.setVec3("viewPos", viewPos);
 
-	std::string name = "material.";
+	// sending the proper uniforms of the properties of the object
+	std::string name = "materials[0].";
 	std::string diffName = name + "diffuse";
 	std::string specularName = name + "specular";
 	std::string shininess = name + "shininess";
 	current.setInt(diffName, 0);
 	current.setInt(specularName, 1);
-	current.setFloat(shininess, 128.0);
+	current.setFloat(shininess, 128.0f);
 
 	if(diffMap)
 		diffMap->activeTexture(0);
 	if(specularMap)
 		specularMap->activeTexture(1);
 
+	// modifying the position, rotation, and scale with model matrix
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, position);
 	for (int i = 0; i < rotations.size(); i++)
@@ -170,8 +191,9 @@ void VertexObject::drawCall(std::vector<Shader>& shaders, glm::mat4& view, glm::
 	}
 
 	model = glm::scale(model, glm::vec3(scale));
-
 	current.setMat4("model", model);
+
+	// final draw call based on if the index data exists or not
 	if (!indexVertices)
 	{
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, vertices));
